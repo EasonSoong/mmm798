@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+@theme {
+  /* Base palette */
+  --color-bg: #08090c;
+  --color-bg-elev: #11141a;
+  --color-panel: #161a23;
+  --color-panel-2: #1c2230;
+  --color-border: #232a36;
+  --color-border-bright: #2e3645;
+
+  /* Text */
+  --color-fg: #f1ede6;
+  --color-fg-soft: #d3cdc1;
+  --color-fg-dim: #8b8478;
+  --color-fg-faint: #4a4640;
+
+  /* Brand */
+  --color-rose: #e85a8d;
+  --color-rose-bright: #ff6f9c;
+  --color-rose-soft: #4a1f30;
+
+  /* Accents */
+  --color-cream: #f5e6d3;
+  --color-mint: #6ee7b7;
+  --color-gold: #facc15;
+  --color-teal: #7dd3fc;
+
+  /* Fonts */
+  --font-display: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
+}
+
+/* Subtle dot grid background for the whole site */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(
+    rgba(241, 237, 230, 0.035) 1px,
+    transparent 1px
+  );
+  background-size: 32px 32px;
+  background-position: 0 0;
+  mask-image: radial-gradient(
+    ellipse at top,
+    black 0%,
+    rgba(0, 0, 0, 0.6) 60%,
+    transparent 100%
+  );
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-rose);
+  color: var(--color-fg);
+}
+
+/* Custom utilities */
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility glow-rose {
+  box-shadow:
+    0 0 0 1px rgba(232, 90, 141, 0.25),
+    0 20px 50px -10px rgba(232, 90, 141, 0.4),
+    0 8px 20px -4px rgba(232, 90, 141, 0.3);
+}
+
+@utility glow-rose-soft {
+  box-shadow:
+    0 0 0 1px rgba(232, 90, 141, 0.15),
+    0 12px 32px -8px rgba(232, 90, 141, 0.22);
+}
+
+@utility border-grad-rose {
+  border-image: linear-gradient(
+      135deg,
+      rgba(232, 90, 141, 0.4),
+      rgba(232, 90, 141, 0.05) 50%,
+      rgba(232, 90, 141, 0.4)
+    )
+    1;
+}
+
+/* Marquee animation for live stats */
+@keyframes scroll-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  animation: scroll-x 40s linear infinite;
+}
+
+/* Status dot pulse */
+@keyframes pulse-dot {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(110, 231, 183, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(110, 231, 183, 0);
+  }
+}
+
+.live-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Subtle reveal on scroll for sections */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+/* Glass effect for navbar */
+@utility glass {
+  background: rgba(17, 20, 26, 0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}

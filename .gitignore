@@ -48,3 +48,5 @@ clients/web-miner/app/dist/
 clients/web-miner/app/.env.local
 clients/web-miner/app/.env.development.local
 clients/web-miner/app/.env.production.local
+.agents/
+skills-lock.json

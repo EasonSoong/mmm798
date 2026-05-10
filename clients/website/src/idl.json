@@ -1,0 +1,1184 @@
+{
+  "address": "ZKGMUfxiRCXFPnqz9zgqAnuqJy15jk7fKbR4o6FuEQM",
+  "metadata": {
+    "name": "equium",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Equium ($EQM) — on-chain CPU mining program for Solana"
+  },
+  "instructions": [
+    {
+      "name": "advance_empty_round",
+      "discriminator": [
+        132,
+        60,
+        168,
+        44,
+        49,
+        255,
+        133,
+        255
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  113,
+                  117,
+                  105,
+                  117,
+                  109,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "slot_hashes",
+          "address": "SysvarS1otHashes111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "fund_vault",
+      "discriminator": [
+        26,
+        33,
+        207,
+        242,
+        119,
+        108,
+        134,
+        73
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  113,
+                  117,
+                  105,
+                  117,
+                  109,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint",
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "source",
+          "docs": [
+            "Admin's source token account. SPL transfer enforces that `admin` is",
+            "the authority; we just verify the mint matches."
+          ],
+          "writable": true
+        },
+        {
+          "name": "mineable_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  113,
+                  117,
+                  105,
+                  117,
+                  109,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  113,
+                  117,
+                  105,
+                  117,
+                  109,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint",
+          "docs": [
+            "Pre-existing mint, created by the deployer before `initialize`. The",
+            "program never mints, so mint authority management (including",
+            "revocation) is the deployer's job. Accepts classic SPL Token OR",
+            "Token-2022 mints — caller selects via `token_program`."
+          ]
+        },
+        {
+          "name": "mineable_vault",
+          "docs": [
+            "PDA-addressed token account custodying the mineable supply. Created",
+            "here as empty; gets the deposit via `fund_vault`. Authority is the",
+            "config PDA so only the program can transfer out."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  113,
+                  117,
+                  105,
+                  117,
+                  109,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "InitializeArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "mine",
+      "discriminator": [
+        59,
+        22,
+        178,
+        213,
+        139,
+        197,
+        160,
+        196
+      ],
+      "accounts": [
+        {
+          "name": "miner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  113,
+                  117,
+                  105,
+                  117,
+                  109,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint",
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "mineable_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  113,
+                  117,
+                  105,
+                  117,
+                  109,
+                  45,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "miner_ata",
+          "docs": [
+            "Miner's ATA receives the block reward. Created on first mine if",
+            "missing."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "miner"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "slot_hashes",
+          "docs": [
+            "because `Sysvar::get` doesn't work for SlotHashes (account too large)."
+          ],
+          "address": "SysvarS1otHashes111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "soln_indices",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "renounce_admin",
+      "discriminator": [
+        223,
+        213,
+        55,
+        194,
+        0,
+        108,
+        225,
+        137
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  113,
+                  117,
+                  105,
+                  117,
+                  109,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "set_target",
+      "discriminator": [
+        101,
+        85,
+        208,
+        178,
+        47,
+        192,
+        36,
+        73
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  113,
+                  117,
+                  105,
+                  117,
+                  109,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_target",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_metadata",
+      "discriminator": [
+        170,
+        182,
+        43,
+        239,
+        97,
+        78,
+        225,
+        186
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  113,
+                  117,
+                  105,
+                  117,
+                  109,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_uri",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "EquiumConfig",
+      "discriminator": [
+        16,
+        29,
+        93,
+        13,
+        128,
+        10,
+        212,
+        187
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "BlockMined",
+      "discriminator": [
+        223,
+        121,
+        105,
+        131,
+        1,
+        213,
+        5,
+        241
+      ]
+    },
+    {
+      "name": "BlockSkipped",
+      "discriminator": [
+        43,
+        88,
+        249,
+        176,
+        123,
+        149,
+        243,
+        21
+      ]
+    },
+    {
+      "name": "DifficultyRetargeted",
+      "discriminator": [
+        93,
+        109,
+        98,
+        79,
+        115,
+        4,
+        12,
+        53
+      ]
+    },
+    {
+      "name": "EquiumInitialized",
+      "discriminator": [
+        46,
+        255,
+        144,
+        167,
+        27,
+        150,
+        195,
+        187
+      ]
+    },
+    {
+      "name": "MiningOpened",
+      "discriminator": [
+        81,
+        220,
+        205,
+        75,
+        163,
+        57,
+        150,
+        243
+      ]
+    },
+    {
+      "name": "RewardHalved",
+      "discriminator": [
+        129,
+        89,
+        50,
+        151,
+        31,
+        56,
+        200,
+        212
+      ]
+    },
+    {
+      "name": "TargetSeeded",
+      "discriminator": [
+        25,
+        233,
+        115,
+        129,
+        131,
+        24,
+        8,
+        220
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "AdminRenounced",
+      "msg": "admin authority has been renounced"
+    },
+    {
+      "code": 6001,
+      "name": "NotAdmin",
+      "msg": "caller is not the admin"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidEquihash",
+      "msg": "equihash solution failed verification"
+    },
+    {
+      "code": 6003,
+      "name": "AboveTarget",
+      "msg": "solution hash does not fall under the difficulty target"
+    },
+    {
+      "code": 6004,
+      "name": "StaleChallenge",
+      "msg": "submitted challenge does not match the current round"
+    },
+    {
+      "code": 6005,
+      "name": "RoundStillActive",
+      "msg": "round is still active and not eligible for empty advance"
+    },
+    {
+      "code": 6006,
+      "name": "SupplyExhausted",
+      "msg": "mineable supply has been exhausted"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidEquihashParams",
+      "msg": "invalid Equihash parameters"
+    },
+    {
+      "code": 6008,
+      "name": "BadSlotHashes",
+      "msg": "slot hashes sysvar account is missing or malformed"
+    },
+    {
+      "code": 6009,
+      "name": "ScheduleOverflow",
+      "msg": "integer overflow in schedule computation"
+    },
+    {
+      "code": 6010,
+      "name": "RewardZeroed",
+      "msg": "epoch reward has reached zero — no further rewards mintable"
+    },
+    {
+      "code": 6011,
+      "name": "WrongMint",
+      "msg": "mint account does not match the one stored in config"
+    },
+    {
+      "code": 6012,
+      "name": "WrongVault",
+      "msg": "mineable vault account does not match the one stored in config"
+    },
+    {
+      "code": 6013,
+      "name": "MiningNotOpen",
+      "msg": "mining has not yet been opened — call fund_vault first"
+    },
+    {
+      "code": 6014,
+      "name": "AlreadyOpen",
+      "msg": "mining is already open; fund_vault can only be called once"
+    },
+    {
+      "code": 6015,
+      "name": "SourceMintMismatch",
+      "msg": "source token account is not for the configured mint"
+    }
+  ],
+  "types": [
+    {
+      "name": "BlockMined",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "height",
+            "type": "u64"
+          },
+          {
+            "name": "winner",
+            "type": "pubkey"
+          },
+          {
+            "name": "reward",
+            "type": "u64"
+          },
+          {
+            "name": "solution_hash",
+            "docs": [
+              "SHA256(soln_indices || I-block) — used by indexers as a tx-stable",
+              "block identifier across reorgs."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "new_challenge",
+            "docs": [
+              "The challenge that opens the *next* round."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BlockSkipped",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "height",
+            "type": "u64"
+          },
+          {
+            "name": "elapsed_slots",
+            "type": "u64"
+          },
+          {
+            "name": "new_challenge",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DifficultyRetargeted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "height",
+            "type": "u64"
+          },
+          {
+            "name": "actual_seconds",
+            "type": "u64"
+          },
+          {
+            "name": "new_target",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "EquiumConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "docs": [
+              "Pre-existing mint the deployer created off-platform. The program only",
+              "references it; mint authority management (including revocation) is the",
+              "deployer's responsibility, NOT the program's."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "mineable_vault",
+            "docs": [
+              "Program-owned token account that custodies the mineable supply. Funded",
+              "to exactly `MINEABLE_BASE` via `fund_vault`."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "mineable_vault_bump",
+            "type": "u8"
+          },
+          {
+            "name": "config_bump",
+            "type": "u8"
+          },
+          {
+            "name": "genesis_slot",
+            "type": "u64"
+          },
+          {
+            "name": "genesis_unix_ts",
+            "type": "i64"
+          },
+          {
+            "name": "equihash_n",
+            "type": "u32"
+          },
+          {
+            "name": "equihash_k",
+            "type": "u32"
+          },
+          {
+            "name": "current_target",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "block_height",
+            "type": "u64"
+          },
+          {
+            "name": "current_challenge",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "current_round_open_slot",
+            "type": "u64"
+          },
+          {
+            "name": "current_round_open_unix_ts",
+            "type": "i64"
+          },
+          {
+            "name": "last_winner",
+            "type": "pubkey"
+          },
+          {
+            "name": "current_epoch_reward",
+            "type": "u64"
+          },
+          {
+            "name": "next_halving_block",
+            "type": "u64"
+          },
+          {
+            "name": "next_retarget_block",
+            "type": "u64"
+          },
+          {
+            "name": "last_retarget_unix_ts",
+            "type": "i64"
+          },
+          {
+            "name": "cumulative_mined",
+            "type": "u64"
+          },
+          {
+            "name": "empty_rounds",
+            "type": "u64"
+          },
+          {
+            "name": "mining_open",
+            "docs": [
+              "Flips true on `fund_vault`. `mine` reverts while false."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "admin_renounced",
+            "type": "bool"
+          },
+          {
+            "name": "_reserved",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "EquiumInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "mineable_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "equihash_n",
+            "type": "u32"
+          },
+          {
+            "name": "equihash_k",
+            "type": "u32"
+          },
+          {
+            "name": "genesis_slot",
+            "type": "u64"
+          },
+          {
+            "name": "genesis_unix_ts",
+            "type": "i64"
+          },
+          {
+            "name": "initial_target",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "genesis_challenge",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitializeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initial_target",
+            "docs": [
+              "256-bit big-endian initial difficulty target."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "equihash_n",
+            "docs": [
+              "Equihash parameter `n` (locked at init)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "equihash_k",
+            "docs": [
+              "Equihash parameter `k`."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "metadata_uri",
+            "docs": [
+              "Metaplex metadata URI (icon + descriptive JSON)."
+            ],
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MiningOpened",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "funded_amount",
+            "type": "u64"
+          },
+          {
+            "name": "opened_slot",
+            "type": "u64"
+          },
+          {
+            "name": "opened_unix_ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RewardHalved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "height",
+            "type": "u64"
+          },
+          {
+            "name": "new_reward",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TargetSeeded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "prev_target",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "new_target",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
