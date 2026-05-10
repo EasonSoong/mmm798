@@ -221,3 +221,69 @@ async function fetchAllMinedInRange(scan: number): Promise<MinedBlock[]> {
     return [];
   }
 }
+
+export interface HashrateSeries {
+  /** Blocks mined in each 1-minute bucket, oldest → newest. */
+  blocksPerMinute: number[];
+  /** Bucket start timestamps (unix seconds), oldest → newest. */
+  bucketTimestamps: number[];
+  /** EWMA-current rate (blocks/min). */
+  currentBpm: number;
+  /** Window-average rate (blocks/min). */
+  averageBpm: number;
+  /** % change of second half vs first half of the window. */
+  trendPct: number;
+}
+
+/**
+ * Bucket recent mined-block timestamps into per-minute counts for charting.
+ * Returns `bucketCount` minutes of data ending at "now".
+ */
+export async function fetchHashrateSeries(
+  scan = 200,
+  bucketCount = 30
+): Promise<HashrateSeries> {
+  const blocks = await fetchAllMinedInRange(scan);
+  const nowSec = Math.floor(Date.now() / 1000);
+  const lastBucketStart = Math.floor(nowSec / 60) * 60;
+  const buckets: number[] = new Array(bucketCount).fill(0);
+  const stamps: number[] = new Array(bucketCount).fill(0);
+  for (let i = 0; i < bucketCount; i++) {
+    stamps[i] = lastBucketStart - (bucketCount - 1 - i) * 60;
+  }
+  for (const b of blocks) {
+    if (!b.ts) continue;
+    const offsetMin = Math.floor((lastBucketStart - b.ts) / 60);
+    if (offsetMin < 0 || offsetMin >= bucketCount) continue;
+    buckets[bucketCount - 1 - offsetMin] += 1;
+  }
+
+  const sum = buckets.reduce((a, b) => a + b, 0);
+  const averageBpm = sum / bucketCount;
+
+  let weight = 0;
+  let weighted = 0;
+  for (let i = 0; i < buckets.length; i++) {
+    const w = Math.pow(0.85, buckets.length - 1 - i);
+    weighted += buckets[i] * w;
+    weight += w;
+  }
+  const currentBpm = weight > 0 ? weighted / weight : 0;
+
+  const half = Math.floor(bucketCount / 2);
+  const firstHalf =
+    buckets.slice(0, half).reduce((a, b) => a + b, 0) / Math.max(1, half);
+  const secondHalf =
+    buckets.slice(half).reduce((a, b) => a + b, 0) /
+    Math.max(1, bucketCount - half);
+  const trendPct =
+    firstHalf > 0 ? ((secondHalf - firstHalf) / firstHalf) * 100 : 0;
+
+  return {
+    blocksPerMinute: buckets,
+    bucketTimestamps: stamps,
+    currentBpm,
+    averageBpm,
+    trendPct,
+  };
+}

@@ -2,6 +2,38 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import MineClientLoader from "@/components/MineClientLoader";
 
+export const metadata = {
+  title: "Mine $EQM",
+  description:
+    "Mine $EQM in your browser. Connect Phantom, press start, your laptop earns block rewards. No install. Mobile-friendly. Fair-launched on Solana.",
+  openGraph: {
+    title: "Mine $EQM in your browser",
+    description:
+      "Connect Phantom. Press start. Your laptop solves Equihash and earns block rewards. Mobile-friendly.",
+    url: "/mine",
+    siteName: "Equium",
+    type: "website" as const,
+    images: [
+      {
+        url: "/mine/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Mine $EQM in your browser",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image" as const,
+    site: "@EquiumEQM",
+    creator: "@EquiumEQM",
+    title: "Mine $EQM in your browser",
+    description:
+      "Connect Phantom. Press start. Your laptop solves Equihash and earns block rewards.",
+    images: ["/mine/opengraph-image"],
+  },
+  alternates: { canonical: "/mine" },
+};
+
 export default function MinePage() {
   return (
     <main>

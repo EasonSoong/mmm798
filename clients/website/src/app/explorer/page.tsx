@@ -5,15 +5,49 @@ import {
   fetchState,
   fetchRecentBlocks,
   fetchLeaderboard,
+  fetchHashrateSeries,
 } from "@/lib/rpc";
 
 export const revalidate = 0;
 
+export const metadata = {
+  title: "Explorer",
+  description:
+    "Live state of the Equium protocol on Solana — block height, network hashrate, recent blocks, and the top-miners leaderboard.",
+  openGraph: {
+    title: "Equium Explorer — live blocks, miners, hashrate",
+    description:
+      "Live state of the Equium protocol on Solana. Block height, top miners, recent blocks.",
+    url: "/explorer",
+    siteName: "Equium",
+    type: "website" as const,
+    images: [
+      {
+        url: "/explorer/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Equium Explorer",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image" as const,
+    site: "@EquiumEQM",
+    creator: "@EquiumEQM",
+    title: "Equium Explorer — live blocks, miners, hashrate",
+    description:
+      "Live state of the Equium protocol on Solana. Block height, top miners, recent blocks.",
+    images: ["/explorer/opengraph-image"],
+  },
+  alternates: { canonical: "/explorer" },
+};
+
 export default async function ExplorerPage() {
-  const [state, blocks, leaderboard] = await Promise.all([
+  const [state, blocks, leaderboard, series] = await Promise.all([
     fetchState(),
     fetchRecentBlocks(12),
     fetchLeaderboard(200, 20),
+    fetchHashrateSeries(200, 30),
   ]);
 
   return (
@@ -25,6 +59,7 @@ export default async function ExplorerPage() {
             initialState={state}
             initialBlocks={blocks}
             initialLeaderboard={leaderboard}
+            initialSeries={series}
           />
         </div>
       </div>

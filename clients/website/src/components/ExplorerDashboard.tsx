@@ -1,12 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { EquiumState, MinedBlock, LeaderboardEntry } from "@/lib/rpc";
+import type {
+  EquiumState,
+  MinedBlock,
+  LeaderboardEntry,
+  HashrateSeries,
+} from "@/lib/rpc";
+import { HashrateChart } from "./HashrateChart";
 
 interface Props {
   initialState: EquiumState | null;
   initialBlocks: MinedBlock[];
   initialLeaderboard: LeaderboardEntry[];
+  initialSeries: HashrateSeries;
 }
 
 type Tab = "blocks" | "leaderboard";
@@ -15,11 +22,13 @@ export function ExplorerDashboard({
   initialState,
   initialBlocks,
   initialLeaderboard,
+  initialSeries,
 }: Props) {
   const [state, setState] = useState<EquiumState | null>(initialState);
   const [blocks, setBlocks] = useState<MinedBlock[]>(initialBlocks);
   const [leaderboard, setLeaderboard] =
     useState<LeaderboardEntry[]>(initialLeaderboard);
+  const [series, setSeries] = useState<HashrateSeries>(initialSeries);
   const [tab, setTab] = useState<Tab>("blocks");
   const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
 
@@ -35,6 +44,7 @@ export function ExplorerDashboard({
         if (data.state) setState(data.state);
         if (data.blocks) setBlocks(data.blocks);
         if (data.leaderboard) setLeaderboard(data.leaderboard);
+        if (data.series) setSeries(data.series);
         setLastUpdated(Date.now());
       } catch {}
     };
@@ -103,6 +113,9 @@ export function ExplorerDashboard({
           accent={state.miningOpen ? "mint" : "fg-dim"}
         />
       </div>
+
+      {/* Hashrate chart */}
+      <HashrateChart series={series} />
 
       {/* Two-column: difficulty + supply */}
       <div className="grid md:grid-cols-2 gap-3">
