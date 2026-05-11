@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useWallet } from "@/lib/wallet-context";
 
 /** Wallet status pill that appears in the mine dashboard header. */
-export function WalletMenu() {
+export function WalletMenu({ onSendClick }: { onSendClick?: () => void }) {
   const wallet = useWallet();
   const [open, setOpen] = useState(false);
   const [showKey, setShowKey] = useState(false);
@@ -102,6 +102,18 @@ export function WalletMenu() {
             </div>
 
             <div className="pt-3 border-t border-[var(--color-border)] flex gap-2">
+              {onSendClick && (
+                <button
+                  onClick={() => {
+                    onSendClick();
+                    setOpen(false);
+                    setShowKey(false);
+                  }}
+                  className="flex-1 px-3 py-2 rounded-full text-[12px] font-semibold bg-[var(--color-rose)] text-[var(--color-bg)] hover:bg-[var(--color-rose-bright)]"
+                >
+                  ↗ Send
+                </button>
+              )}
               <button
                 onClick={() => {
                   wallet.lock();

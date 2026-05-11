@@ -17,6 +17,7 @@ import { ShareCardModal } from "./ShareCardModal";
 import { ReferralBanner } from "./ReferralBanner";
 import { ReferralButton } from "./ReferralButton";
 import { WalletMenu } from "./wallet/WalletMenu";
+import { SendModal } from "./wallet/SendModal";
 
 interface LogLine {
   ts: number;
@@ -68,6 +69,7 @@ export function MineDashboard() {
   const [stats, setStats] = useState<SessionStats>(INITIAL_STATS);
   const [logs, setLogs] = useState<LogLine[]>([]);
   const [shareOpen, setShareOpen] = useState(false);
+  const [sendOpen, setSendOpen] = useState(false);
 
   const minerHandle = useRef<MinerHandle | null>(null);
   const logsRef = useRef<HTMLDivElement>(null);
@@ -202,7 +204,7 @@ export function MineDashboard() {
             Your keys never leave this device.
           </p>
         </div>
-        <WalletMenu />
+        <WalletMenu onSendClick={() => setSendOpen(true)} />
       </div>
 
       <WalletPanel
@@ -268,6 +270,49 @@ export function MineDashboard() {
           onClose={() => setShareOpen(false)}
           pubkey={pubkey.toBase58()}
           stats={stats}
+        />
+      )}
+
+      {pubkey && (
+        <SendModal
+          open={sendOpen}
+          onClose={() => setSendOpen(false)}
+          connection={connection}
+          fromPubkey={pubkey}
+          signTransaction={wallet.signTransaction}
+          mint={config?.mint ?? null}
+          solLamports={solBalance !== null ? solBalance * LAMPORTS_PER_SOL : null}
+          eqmBase={eqmBalance}
+          onSent={() => {
+            // Refresh balances after a successful send.
+            (async () => {
+              try {
+                const lamports = await connection.getBalance(pubkey);
+                setSolBalance(lamports / LAMPORTS_PER_SOL);
+              } catch {}
+              if (config) {
+                try {
+                  const tokenProgram = await detectTokenProgram(
+                    connection,
+                    config.mint
+                  );
+                  const ata = getAssociatedTokenAddressSync(
+                    config.mint,
+                    pubkey,
+                    false,
+                    tokenProgram
+                  );
+                  const acct = await getAccount(
+                    connection,
+                    ata,
+                    "confirmed",
+                    tokenProgram
+                  );
+                  setEqmBalance(acct.amount);
+                } catch {}
+              }
+            })();
+          }}
         />
       )}
     </div>
