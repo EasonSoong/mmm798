@@ -24,7 +24,7 @@ export default function RpcDocsPage() {
             on-chain state and submit mining transactions. The public Solana
             endpoint works but is heavily rate-limited; a free Helius key takes
             5 minutes and gives you 100k requests/day — more than enough for a
-            laptop mining around the clock.
+            single miner running around the clock.
           </p>
           <p className="text-[15px] leading-[1.6] text-[var(--color-fg-dim)] max-w-2xl mb-12">
             <span className="font-semibold text-[var(--color-fg)]">

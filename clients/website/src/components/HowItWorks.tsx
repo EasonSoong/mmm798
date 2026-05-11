@@ -5,7 +5,7 @@ export function HowItWorks() {
         <SectionHeader
           kicker="How it works"
           title="Proof-of-work, returned to the people."
-          sub="Equihash is memory-bound, not compute-bound. A $40k GPU farm doesn't beat your laptop. Anyone with a CPU can compete — exactly how Bitcoin felt in 2010."
+          sub="Equihash is memory-bound, not compute-bound. A $40k GPU farm doesn't beat your CPU. Anyone with a machine can compete — exactly how Bitcoin felt in 2010."
         />
 
         <div className="mt-16 grid md:grid-cols-3 gap-4">

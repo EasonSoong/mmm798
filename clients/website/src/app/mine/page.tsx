@@ -5,11 +5,11 @@ import MineClientLoader from "@/components/MineClientLoader";
 export const metadata = {
   title: "Mine $EQM",
   description:
-    "Mine $EQM in your browser. Connect Phantom, press start, your laptop earns block rewards. No install. Mobile-friendly. Fair-launched on Solana.",
+    "Mine $EQM in your browser. Generate a wallet, press start, your machine earns block rewards. No install. Mobile-friendly. Fair-launched on Solana.",
   openGraph: {
     title: "Mine $EQM in your browser",
     description:
-      "Connect Phantom. Press start. Your laptop solves Equihash and earns block rewards. Mobile-friendly.",
+      "Generate a wallet. Press start. Your machine solves Equihash and earns block rewards. Mobile-friendly.",
     url: "/mine",
     siteName: "Equium",
     type: "website" as const,
@@ -28,7 +28,7 @@ export const metadata = {
     creator: "@EquiumEQM",
     title: "Mine $EQM in your browser",
     description:
-      "Connect Phantom. Press start. Your laptop solves Equihash and earns block rewards.",
+      "Generate a wallet. Press start. Your machine solves Equihash and earns block rewards.",
     images: ["/mine/opengraph-image"],
   },
   alternates: { canonical: "/mine" },

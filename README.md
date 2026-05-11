@@ -6,7 +6,7 @@
 
 ### A CPU-mineable token on Solana
 
-**Bitcoin-style economics. Mine from your laptop or phone.**
+**Bitcoin-style economics. Mine from any machine.**
 
 [Mine in your browser](#-mine-in-your-browser) · [Run the CLI miner](#-run-the-cli-miner) · [What is EQM?](#-what-is-eqm) · [Follow on X](https://x.com/EquiumEQM)
 
@@ -33,7 +33,7 @@ No VC allocation. No insider tokens. Every coin in circulation either came from 
 
 Your computer guesses random numbers (`nonce`s) until it finds one that, combined with the current network challenge, hashes to a number small enough to win the block. The first valid solution submitted to the chain in each ~1-minute round earns 25 EQM.
 
-The puzzle is **memory-bound, not compute-bound** — that's the point. Equihash is designed so a $40,000 GPU rig isn't meaningfully faster than your laptop. CPUs win.
+The puzzle is **memory-bound, not compute-bound** — that's the point. Equihash is designed so a $40,000 GPU rig isn't meaningfully faster than your CPU. CPUs win.
 
 A few things worth knowing:
 
@@ -97,7 +97,7 @@ The mint address is intentionally not listed here pre-mainnet. The miner reads i
 
 **Will I make money mining EQM?** Maybe. Maybe not. Don't quit your job. Treat this like distributed sudoku that occasionally gives you internet money.
 
-**What if my computer is slow?** It mines slower. The network adjusts difficulty so blocks come at the same rate regardless of total hashrate, but your *share* of those blocks scales with your CPU. A laptop will still earn — just less than a workstation.
+**What if my computer is slow?** It mines slower. The network adjusts difficulty so blocks come at the same rate regardless of total hashrate, but your *share* of those blocks scales with your CPU. A modest machine will still earn — just less than a workstation.
 
 **Can someone steal my work?** No. Solutions are cryptographically bound to the wallet that signs the transaction. If you broadcast a winning solution and someone copies the bytes, the chain rejects their tx because the puzzle includes their wallet address, not yours.
 

@@ -54,6 +54,6 @@ cp ../../../target/idl/equium.json app/src/idl.json
 4. Otherwise build a `mine` tx, hand it to the wallet adapter for signing,
    and broadcast.
 
-The solver is single-threaded WASM. Solve time on a modern laptop:
+The solver is single-threaded WASM. Solve time on a modern machine:
 ~1–3 s per nonce attempt for (96, 5). Multi-threaded WASM (Rayon +
 SharedArrayBuffer) is a future optimization.

@@ -9,7 +9,7 @@ export function MiningPreview() {
           <div>
             <SectionHeader
               kicker="Mine it"
-              title="Your laptop is the rig."
+              title="Your machine is the rig."
               sub="Equihash (96, 5) needs ~50 MB of RAM per thread. Runs on any modern CPU. Solves take a few seconds. Block rewards land directly in your wallet."
             />
             <div className="mt-9 flex flex-col sm:flex-row gap-3">

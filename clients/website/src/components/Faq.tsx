@@ -10,7 +10,7 @@ const ITEMS = [
   },
   {
     q: "What if my computer is slow?",
-    a: "It mines slower. The network adjusts difficulty so blocks come at the same rate regardless of total hashrate, but your share of those blocks scales with your CPU. A laptop will still earn — just less than a workstation.",
+    a: "It mines slower. The network adjusts difficulty so blocks come at the same rate regardless of total hashrate, but your share of those blocks scales with your CPU. A modest machine will still earn — just less than a workstation.",
   },
   {
     q: "Can someone steal my solution?",

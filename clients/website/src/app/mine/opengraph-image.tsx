@@ -141,7 +141,7 @@ export default async function OpenGraph() {
               display: "flex",
             }}
           >
-            Connect Phantom. Press start. Your laptop earns block rewards. No install. Mobile-friendly.
+            Generate a wallet. Press start. Your machine earns block rewards. No install. Mobile-friendly.
           </div>
         </div>
 

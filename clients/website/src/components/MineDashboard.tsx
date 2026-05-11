@@ -200,7 +200,7 @@ export function MineDashboard() {
             Mine $EQM
           </h1>
           <p className="mt-2 text-[15px] text-[var(--color-fg-dim)] max-w-xl">
-            Press start. Your laptop solves Equihash and earns block rewards.
+            Press start. Your machine solves Equihash and earns block rewards.
             Your keys never leave this device.
           </p>
         </div>
@@ -682,7 +682,7 @@ function CoresPicker({
             </span>
           </div>
           <div className="text-[12px] text-[var(--color-fg-dim)] mt-1.5 max-w-md">
-            More cores = faster mining, but your laptop will get warmer and other
+            More cores = faster mining, but your machine will get warmer and other
             apps may feel sluggish. Default leaves one core free for the OS.
             {disabled && (
               <span className="block text-[var(--color-gold)] mt-1">

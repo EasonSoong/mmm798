@@ -30,7 +30,7 @@ export function Hero() {
         <p className="mt-8 max-w-2xl mx-auto text-[18px] md:text-[20px] leading-[1.55] text-[var(--color-fg-dim)] text-balance fade-up" style={{ animationDelay: "120ms" }}>
           Equium ($EQM) is a CPU-mineable token on Solana. Bitcoin-style economics —{" "}
           <span className="text-[var(--color-fg)]">21M hard cap, halving forever</span>.
-          No presale, no airdrop, no VC. Mine it from your laptop. Even from your phone.
+          No presale, no airdrop, no VC. Mine it on any machine. Even your phone.
         </p>
 
         {/* CTAs */}

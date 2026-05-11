@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Equium — CPU-mineable Solana token",
     description:
-      "Bitcoin-style economics on Solana. Mine $EQM from your laptop or phone. No presale, no airdrop, no VC.",
+      "Bitcoin-style economics on Solana. Mine $EQM from any machine. No presale, no airdrop, no VC.",
     url: "/",
     siteName: "Equium",
     type: "website",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     creator: "@EquiumEQM",
     title: "Equium — CPU-mineable Solana token",
     description:
-      "Bitcoin-style economics on Solana. Mine $EQM from your laptop or phone. No presale, no airdrop, no VC.",
+      "Bitcoin-style economics on Solana. Mine $EQM from any machine. No presale, no airdrop, no VC.",
     images: ["/opengraph-image"],
   },
   robots: {
