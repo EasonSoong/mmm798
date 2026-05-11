@@ -46,6 +46,12 @@ hex = "0.4"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 parking_lot = "0.12"
 
+# Force openssl-sys (pulled in transitively by solana-client → reqwest) to
+# build OpenSSL from source. Without this, Windows runners can't find a
+# system OpenSSL and the build fails. Adds ~30s to first build but makes
+# CI reproducible across macOS/Windows/Linux without per-runner setup.
+openssl-sys = { version = "0.9", features = ["vendored"] }
+
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
