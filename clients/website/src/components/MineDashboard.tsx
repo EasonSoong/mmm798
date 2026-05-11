@@ -14,8 +14,6 @@ import { detectTokenProgram, fetchConfig, getProgramAnchorlike, type EquiumConfi
 import { startMiner, type MinerHandle } from "@/lib/miner-engine";
 import { RPC_URL } from "@/lib/rpc";
 import { ShareCardModal } from "./ShareCardModal";
-import { ReferralBanner } from "./ReferralBanner";
-import { ReferralButton } from "./ReferralButton";
 import { WalletMenu } from "./wallet/WalletMenu";
 import { SendModal } from "./wallet/SendModal";
 
@@ -187,8 +185,6 @@ export function MineDashboard() {
 
   return (
     <div className="space-y-6 pb-12">
-      <ReferralBanner />
-
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
@@ -262,8 +258,6 @@ export function MineDashboard() {
       </div>
 
       <ActivityLog logs={logs} logsRef={logsRef} />
-
-      {pubkey && <ReferralButton pubkey={pubkey.toBase58()} />}
 
       {shareOpen && pubkey && (
         <ShareCardModal
