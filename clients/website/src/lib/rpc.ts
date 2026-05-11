@@ -17,14 +17,15 @@ const SERVER_RPC_URL =
   "https://api.devnet.solana.com";
 
 /** Client-facing RPC URL. Returns the user's override if one is stored,
- * otherwise the same-origin proxy. Server-side returns the upstream URL. */
+ * otherwise the same-origin proxy as an absolute URL (Solana web3.js v2
+ * rejects relative paths). Server-side returns the upstream URL. */
 export function clientRpcUrl(): string {
   if (typeof window === "undefined") return SERVER_RPC_URL;
   try {
     const override = localStorage.getItem("equium:rpc-override");
     if (override && /^https?:\/\//.test(override)) return override;
   } catch {}
-  return "/api/rpc";
+  return `${window.location.origin}/api/rpc`;
 }
 
 export const RPC_URL =

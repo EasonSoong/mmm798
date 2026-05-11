@@ -18,7 +18,10 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
             label: macos-arm64
-          - os: macos-latest
+          # macos-13 is the last Intel runner — needed because macos-latest is
+          # now ARM and cross-compiling solana-client's openssl-sys to x64 is
+          # painful. Build x64 natively on Intel instead.
+          - os: macos-13
             target: x86_64-apple-darwin
             label: macos-x64
           - os: windows-latest
