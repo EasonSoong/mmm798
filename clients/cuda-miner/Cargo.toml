@@ -1,0 +1,32 @@
+[package]
+name = "equium-cuda-miner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Reference CUDA GPU miner for Equium ($EQM)"
+
+[[bin]]
+name = "equium-cuda-miner"
+path = "src/main.rs"
+
+[dependencies]
+equihash-core = { path = "../../crates/equihash-core", features = ["solver"] }
+equium = { path = "../../programs/equium", features = ["no-entrypoint"] }
+anchor-client = "0.31.1"
+anchor-lang = { workspace = true }
+anchor-spl = { workspace = true }
+solana-sdk = "2.1"
+solana-client = "2.1"
+solana-program = { workspace = true }
+equihash = { workspace = true, features = ["std"] }
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+log = "0.4"
+env_logger = "0.11"
+rand = { workspace = true }
+hex = { workspace = true }
+# cudarc with dynamic-loading so the crate builds on any host (no CUDA toolkit
+# required at build time). libcuda.so / nvcuda.dll must be present at runtime
+# on the mining machine. If `dynamic-loading` is unavailable in your installed
+# cudarc version, drop it and ensure CUDA is linkable at build time.
+cudarc = { version = "0.13", default-features = false, features = ["std", "driver", "nvrtc", "dynamic-loading"] }
