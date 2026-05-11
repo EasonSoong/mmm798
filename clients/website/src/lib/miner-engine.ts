@@ -1,6 +1,11 @@
-// Mining engine: orchestrates a Web Worker (Equihash solver) + RPC reads +
-// transaction signing/submitting. Designed for the browser miner UI; the
-// CLI miner in Rust does the same work via solana-client.
+// Mining engine: orchestrates a pool of Web Worker Equihash solvers + RPC
+// reads + transaction signing/submitting. Designed for the browser miner UI;
+// the CLI miner in Rust does the same work via solana-client.
+//
+// Parallelism: spawns N workers (N = hardware concurrency - 1, capped). Each
+// worker runs an independent solve loop with its own random seed; whenever one
+// finds a below-target solution, the main loop submits it. This gives a near-
+// linear speedup vs a single worker on multi-core machines.
 
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { Program } from "@coral-xyz/anchor";
@@ -38,6 +43,8 @@ export interface MinerOptions {
   miner: PublicKey;
   signTransaction: (tx: Transaction) => Promise<Transaction>;
   cb: MinerCallbacks;
+  /** Override worker count. Defaults to hardwareConcurrency - 1, capped to 8. */
+  workerCount?: number;
 }
 
 export interface MinerHandle {
@@ -54,58 +61,190 @@ interface SolveResponse {
   message?: string;
 }
 
+interface SolverSlot {
+  worker: Worker;
+  busy: boolean;
+}
+
+const DEFAULT_MAX_WORKERS = 8;
+
+function pickWorkerCount(override?: number): number {
+  if (override && override > 0) return Math.min(override, 16);
+  const hw =
+    typeof navigator !== "undefined" && navigator.hardwareConcurrency
+      ? navigator.hardwareConcurrency
+      : 4;
+  return Math.max(1, Math.min(hw - 1, DEFAULT_MAX_WORKERS));
+}
+
 export function startMiner(opts: MinerOptions): MinerHandle {
   const { connection, program, miner, signTransaction, cb } = opts;
+  const workerCount = pickWorkerCount(opts.workerCount);
   let stopped = false;
-  let worker: Worker | null = null;
   let nextJobId = 1;
   let tokenProgramCache: PublicKey | null = null;
   let cumulativeNonces = 0;
+  let tryInRound = 0;
+  let currentConfig: EquiumConfig | null = null;
+  let submitting = false;
   const startedAt = Date.now();
+
+  const slots: SolverSlot[] = Array.from({ length: workerCount }, () => ({
+    worker: new Worker("/wasm/miner.worker.js", { type: "module" }),
+    busy: false,
+  }));
+
+  cb.log(
+    "info",
+    `solver pool: ${workerCount} worker${workerCount === 1 ? "" : "s"}`
+  );
 
   const stop = () => {
     stopped = true;
-    if (worker) {
-      worker.terminate();
-      worker = null;
+    for (const slot of slots) {
+      slot.worker.terminate();
     }
     cb.onStatus("stopped");
   };
 
-  const askSolver = (
-    req: Omit<SolveResponse, "type" | "jobId"> & {
-      n: number;
-      k: number;
-      challenge: Uint8Array;
-      miner: Uint8Array;
-      height: bigint;
-      maxAttempts: number;
-      seed: Uint8Array;
-    }
-  ) =>
-    new Promise<SolveResponse>((resolve, reject) => {
-      if (!worker) {
-        worker = new Worker("/wasm/miner.worker.js", { type: "module" });
-      }
-      const w = worker;
-      const jobId = nextJobId++;
-      const onMessage = (e: MessageEvent<SolveResponse>) => {
-        if (e.data.jobId !== jobId) return;
-        w.removeEventListener("message", onMessage);
-        resolve(e.data);
-      };
-      const onError = (e: ErrorEvent) => {
-        w.removeEventListener("error", onError);
-        reject(new Error(e.message));
-      };
-      w.addEventListener("message", onMessage);
-      w.addEventListener("error", onError, { once: true });
-      w.postMessage({ type: "solve", jobId, ...req });
-    });
+  /** Dispatch a single solve job to a specific worker. The handler runs the
+   * full lifecycle: receive → target-check → maybe submit → re-dispatch.  */
+  const dispatchTo = (slot: SolverSlot, cfg: EquiumConfig) => {
+    if (stopped) return;
+    slot.busy = true;
 
+    const seed = new Uint8Array(32);
+    crypto.getRandomValues(seed);
+    const jobId = nextJobId++;
+
+    const onMessage = async (e: MessageEvent<SolveResponse>) => {
+      if (e.data.jobId !== jobId) return;
+      slot.worker.removeEventListener("message", onMessage);
+      slot.busy = false;
+      if (stopped) return;
+
+      const resp = e.data;
+
+      if (resp.type === "error") {
+        cb.log("err", `solver error: ${resp.message}`);
+        // Re-dispatch after a brief pause to avoid a tight error loop.
+        setTimeout(() => {
+          if (!stopped && currentConfig) dispatchTo(slot, currentConfig);
+        }, 1000);
+        return;
+      }
+
+      const attempts = resp.attempts ?? 1;
+      cumulativeNonces += attempts;
+      const elapsedSec = (Date.now() - startedAt) / 1000;
+
+      if (resp.type === "no-solution") {
+        cb.onAttempt({
+          tryNum: tryInRound,
+          aboveTarget: true,
+          solveMs: resp.solveMs ?? 0,
+          cumulativeNonces,
+          elapsedSec,
+        });
+        if (!stopped && currentConfig) dispatchTo(slot, currentConfig);
+        return;
+      }
+
+      // Off-chain target check
+      const inputBlock = buildInputBlock(
+        cfg.currentChallenge,
+        miner.toBytes(),
+        cfg.blockHeight
+      );
+      const candHash = await sha256(
+        concatBytes(resp.solnIndices!, inputBlock)
+      );
+      const aboveTarget = !hashUnderTarget(candHash, cfg.currentTarget);
+
+      tryInRound += 1;
+      cb.onAttempt({
+        tryNum: tryInRound,
+        aboveTarget,
+        solveMs: resp.solveMs ?? 0,
+        cumulativeNonces,
+        elapsedSec,
+      });
+
+      if (aboveTarget) {
+        if (!stopped && currentConfig) dispatchTo(slot, currentConfig);
+        return;
+      }
+
+      // Below target — submit if no other worker is mid-submit for this round.
+      if (submitting) {
+        // Another worker already won this round; re-dispatch for the next.
+        if (!stopped && currentConfig) dispatchTo(slot, currentConfig);
+        return;
+      }
+      submitting = true;
+      cb.onStatus("submitting");
+      try {
+        if (!tokenProgramCache) {
+          tokenProgramCache = await detectTokenProgram(connection, cfg.mint);
+        }
+        const tx = await buildMineTx({
+          program,
+          miner,
+          mint: cfg.mint,
+          tokenProgram: tokenProgramCache,
+          nonce: resp.nonce!,
+          solnIndices: resp.solnIndices!,
+        });
+        const recent = await connection.getLatestBlockhash("confirmed");
+        tx.recentBlockhash = recent.blockhash;
+        tx.feePayer = miner;
+        const signed = await signTransaction(tx);
+        const sig = await connection.sendRawTransaction(signed.serialize(), {
+          skipPreflight: true,
+        });
+        await connection.confirmTransaction(
+          { signature: sig, ...recent },
+          "confirmed"
+        );
+        cb.onBlockMined({
+          height: cfg.blockHeight,
+          sig,
+          rewardBase: cfg.currentEpochReward,
+        });
+        cb.log(
+          "ok",
+          `mined block ${cfg.blockHeight.toString()} (+${formatBase(cfg.currentEpochReward)} EQM)`
+        );
+      } catch (e: any) {
+        const msg = String(e?.message ?? e);
+        cb.log("err", `submit failed: ${truncate(msg, 110)}`);
+        await sleep(600);
+      } finally {
+        submitting = false;
+        cb.onStatus("solving");
+        if (!stopped && currentConfig) dispatchTo(slot, currentConfig);
+      }
+    };
+
+    slot.worker.addEventListener("message", onMessage);
+    slot.worker.postMessage({
+      type: "solve",
+      jobId,
+      n: cfg.equihashN,
+      k: cfg.equihashK,
+      challenge: cfg.currentChallenge,
+      miner: miner.toBytes(),
+      height: cfg.blockHeight,
+      maxAttempts: 4096,
+      seed,
+    });
+  };
+
+  // Top-level supervisor: keep config fresh, kick idle workers, handle network
+  // failures. Workers self-redispatch after each result so this loop only
+  // intervenes when config changes or things go wrong.
   (async () => {
-    let tryInRound = 0;
-    let currentHeight = -1n;
+    let lastHeight = -1n;
 
     while (!stopped) {
       try {
@@ -116,15 +255,19 @@ export function startMiner(opts: MinerOptions): MinerHandle {
           continue;
         }
         cb.onConfig(cfg);
+        currentConfig = cfg;
 
         if (!cfg.miningOpen) {
-          cb.log("err", "Mining is not open yet (admin hasn't funded the vault)");
+          cb.log(
+            "err",
+            "Mining is not open yet (admin hasn't funded the vault)"
+          );
           await sleep(5000);
           continue;
         }
 
-        if (cfg.blockHeight !== currentHeight) {
-          currentHeight = cfg.blockHeight;
+        if (cfg.blockHeight !== lastHeight) {
+          lastHeight = cfg.blockHeight;
           tryInRound = 0;
           cb.log(
             "info",
@@ -134,102 +277,16 @@ export function startMiner(opts: MinerOptions): MinerHandle {
 
         cb.onStatus("solving");
 
-        const seed = new Uint8Array(32);
-        crypto.getRandomValues(seed);
-        const t0 = performance.now();
-
-        const resp = await askSolver({
-          n: cfg.equihashN,
-          k: cfg.equihashK,
-          challenge: cfg.currentChallenge,
-          miner: miner.toBytes(),
-          height: cfg.blockHeight,
-          maxAttempts: 4096,
-          seed,
-        });
-
-        if (resp.type === "error") {
-          cb.log("err", `solver error: ${resp.message}`);
-          await sleep(1000);
-          continue;
-        }
-        if (resp.type === "no-solution") {
-          cb.log(
-            "info",
-            `solver exhausted nonces (${resp.attempts}); refreshing state`
-          );
-          continue;
-        }
-
-        tryInRound += 1;
-        cumulativeNonces += resp.attempts ?? 1;
-        const elapsedSec = (Date.now() - startedAt) / 1000;
-
-        // Off-chain target check
-        const inputBlock = buildInputBlock(
-          cfg.currentChallenge,
-          miner.toBytes(),
-          cfg.blockHeight
-        );
-        const candHash = await sha256(
-          concatBytes(resp.solnIndices!, inputBlock)
-        );
-        const aboveTarget = !hashUnderTarget(candHash, cfg.currentTarget);
-
-        cb.onAttempt({
-          tryNum: tryInRound,
-          aboveTarget,
-          solveMs: resp.solveMs ?? 0,
-          cumulativeNonces,
-          elapsedSec,
-        });
-
-        if (aboveTarget) {
-          cb.log(
-            "info",
-            `try #${tryInRound} · above target · ${(resp.solveMs ?? 0).toFixed(0)}ms`
-          );
-          continue;
-        }
-
-        cb.onStatus("submitting");
-        try {
-          if (!tokenProgramCache) {
-            tokenProgramCache = await detectTokenProgram(connection, cfg.mint);
+        // Kick any idle workers onto the current config.
+        for (const slot of slots) {
+          if (!slot.busy && !submitting) {
+            dispatchTo(slot, cfg);
           }
-          const tx = await buildMineTx({
-            program,
-            miner,
-            mint: cfg.mint,
-            tokenProgram: tokenProgramCache,
-            nonce: resp.nonce!,
-            solnIndices: resp.solnIndices!,
-          });
-          const recent = await connection.getLatestBlockhash("confirmed");
-          tx.recentBlockhash = recent.blockhash;
-          tx.feePayer = miner;
-          const signed = await signTransaction(tx);
-          const sig = await connection.sendRawTransaction(signed.serialize(), {
-            skipPreflight: true,
-          });
-          await connection.confirmTransaction(
-            { signature: sig, ...recent },
-            "confirmed"
-          );
-          cb.onBlockMined({
-            height: cfg.blockHeight,
-            sig,
-            rewardBase: cfg.currentEpochReward,
-          });
-          cb.log(
-            "ok",
-            `mined block ${cfg.blockHeight.toString()} (+${formatBase(cfg.currentEpochReward)} EQM)`
-          );
-        } catch (e: any) {
-          const msg = String(e?.message ?? e);
-          cb.log("err", `submit failed: ${truncate(msg, 110)}`);
-          await sleep(600);
         }
+
+        // Poll the chain for round changes every few seconds — workers will
+        // pick up the new config on their next dispatch automatically.
+        await sleep(4000);
       } catch (e: any) {
         if (stopped) break;
         cb.log("err", `loop error: ${truncate(String(e?.message ?? e), 110)}`);
