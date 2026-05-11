@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
+import { MAINNET_MINT } from "@/lib/constants";
 
 export function Hero() {
   return (
@@ -11,14 +13,6 @@ export function Hero() {
            style={{ background: "radial-gradient(circle, rgba(232,90,141,0.35) 0%, transparent 65%)" }} />
 
       <div className="relative max-w-5xl mx-auto text-center">
-        {/* Eyebrow chip */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--color-border-bright)] bg-[var(--color-panel)] mb-8 fade-up">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-mint)] live-dot" />
-          <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-[var(--color-fg-dim)]">
-            Live on Solana Devnet
-          </span>
-        </div>
-
         {/* Headline */}
         <h1 className="text-[56px] md:text-[88px] leading-[1] font-black tracking-[-0.035em] text-balance fade-up" style={{ animationDelay: "60ms" }}>
           A token you{" "}
@@ -51,6 +45,14 @@ export function Hero() {
           </Link>
         </div>
 
+        {/* Mint address pill */}
+        <div
+          className="mt-7 flex justify-center fade-up"
+          style={{ animationDelay: "220ms" }}
+        >
+          <MintPill mint={MAINNET_MINT} />
+        </div>
+
         {/* Trust strip — quick visual specs */}
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--color-border)] rounded-2xl overflow-hidden border border-[var(--color-border)] fade-up" style={{ animationDelay: "260ms" }}>
           <SpecCell label="Total supply" value="21M" accent="rose" />
@@ -60,6 +62,39 @@ export function Hero() {
         </div>
       </div>
     </section>
+  );
+}
+
+function MintPill({ mint }: { mint: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(mint);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {}
+  };
+  const short = `${mint.slice(0, 6)}…${mint.slice(-6)}`;
+  return (
+    <button
+      onClick={copy}
+      title={mint}
+      className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[var(--color-border-bright)] bg-[var(--color-panel)] hover:bg-[var(--color-panel-2)] transition-colors"
+    >
+      <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--color-fg-dim)] font-semibold">
+        $EQM mint
+      </span>
+      <span className="font-mono text-[12.5px] text-[var(--color-teal)] font-semibold">
+        {short}
+      </span>
+      <span
+        className={`text-[10px] font-mono font-semibold transition-colors ${
+          copied ? "text-[var(--color-mint)]" : "text-[var(--color-fg-faint)] group-hover:text-[var(--color-fg-soft)]"
+        }`}
+      >
+        {copied ? "✓ copied" : "copy"}
+      </span>
+    </button>
   );
 }
 

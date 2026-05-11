@@ -8,7 +8,7 @@
 
 **Bitcoin-style economics. Mine from any machine.**
 
-[Mine in your browser](#-mine-in-your-browser) · [Run the CLI miner](#-run-the-cli-miner) · [What is EQM?](#-what-is-eqm) · [Follow on X](https://x.com/EquiumEQM)
+[Mine in your browser](https://equium.xyz/mine) · [Desktop app](https://equium.xyz/download) · [CLI miner](#-cli-miner) · [Docs](https://equium.xyz/docs) · [Follow on X](https://x.com/EquiumEQM)
 
 </div>
 
@@ -42,27 +42,21 @@ A few things worth knowing:
 - **Rewards halve over time.** Initial 25 EQM/block → 12.5 → 6.25 → … forever. Mirrors Bitcoin's emission curve.
 - **Empty rounds are possible.** If nobody mines a given round, the reward stays in the program-owned vault permanently. Real fixed supply, no IOUs.
 
-## ✦ Mine in your browser
+## ✦ Three ways to mine
 
-The easiest way to start: open [the web miner](#) in any modern browser, connect Phantom or Solflare, click **Start Mining**. Everything happens client-side in a Web Worker — your wallet never leaves your device.
+All three reference miners are first-class. They submit the same `mine` transactions to the same on-chain program, so the on-chain output is identical. Pick the one that fits your setup.
 
-> _Hosted miner link goes here once we deploy the frontend._
+| | What | Best for |
+|---|---|---|
+| **Browser** | [equium.xyz/mine](https://equium.xyz/mine) | No install, no RPC setup. Casual mining and trying things out. Built-in encrypted wallet stored in your browser. |
+| **Desktop app** | [equium.xyz/download](https://equium.xyz/download) | Native macOS / Windows / Linux. Encrypted local wallet (Argon2id + AES-256-GCM). Bring your own RPC. |
+| **CLI miner** | `clients/cli-miner` (see below) | Headless, server-friendly, single binary. Reads an existing Solana keypair file. |
 
-If you want to run the web miner locally:
+The browser miner is the easiest to try; the desktop app is the recommended steady-state setup; the CLI is what you want on a VPS or alongside other services.
 
-```bash
-git clone https://github.com/HannaPrints/equium.git
-cd equium/clients/web-miner/app
-npm install
-npm run dev
-# open http://localhost:5173
-```
+## ✦ CLI miner
 
-The browser miner works on phones too — Equihash (96, 5) only needs ~50 MB of RAM, well within mobile WASM limits.
-
-## ✦ Run the CLI miner
-
-For dedicated mining (longer sessions, multiple cores eventually), use the Rust binary. It's faster than the browser solver and prints live stats.
+The reference Rust implementation. Single binary, no dependencies beyond what `cargo` produces.
 
 ```bash
 git clone https://github.com/HannaPrints/equium.git
@@ -70,28 +64,35 @@ cd equium
 cargo build -p equium-cli-miner --release
 
 ./target/release/equium-miner \
-  --rpc-url https://api.devnet.solana.com \
+  --rpc-url https://mainnet.helius-rpc.com/?api-key=YOUR_KEY \
   --keypair ~/.config/solana/id.json
 ```
 
-Your wallet needs a small amount of SOL for transaction fees (under 0.001 SOL per block). Mined EQM lands in your wallet's associated token account automatically.
+The CLI uses an existing Solana keypair file. Generate one with `solana-keygen new` or export from any wallet. It needs a small amount of SOL for transaction fees (under 0.001 SOL per block); mined EQM lands in the wallet's associated token account automatically.
+
+Pass `--max-blocks N` to stop after N successful mines, or omit it to run indefinitely. Run with `--help` for the full flag set.
 
 ```
 $ equium-miner --rpc-url https://api.devnet.solana.com --keypair my-wallet.json
-[INFO] equium-miner starting:
-[INFO]   miner: 8x9k…RyW
-[INFO] round opened: height=42 target=10ffff…ffff epoch_reward=25000000 (n=96, k=5)
-[INFO]   solved in 6312ms after 14 nonce attempt(s); soln=68B
-[INFO]   ✓ block 42 confirmed in 933ms (sig: 4xZ9…Ks2)
+   round #42   reward 25 EQM   target 0x10ffff…
+     · try #1   above target        587ms   1.7 H/s
+     · try #2   above target        612ms   1.6 H/s
+     ✓ MINED!   +25 EQM     try #3   601ms   1.6 H/s
+       sig 4xZ9Ks…2pH8Yt
 ```
+
+A free Helius key (see [docs/rpc](https://equium.xyz/docs/rpc)) is recommended for sustained mining; the default public Solana endpoints rate-limit aggressively under load.
 
 ## ✦ Where to find us
 
-- 🐦 X: [**@EquiumEQM**](https://x.com/EquiumEQM)
-- 💻 GitHub: [HannaPrints/equium](https://github.com/HannaPrints/equium)
-- 🔗 Solana program: [`ZKGMUfxiRCXFPnqz9zgqAnuqJy15jk7fKbR4o6FuEQM`](https://explorer.solana.com/address/ZKGMUfxiRCXFPnqz9zgqAnuqJy15jk7fKbR4o6FuEQM?cluster=devnet) (devnet)
+- Website: [equium.xyz](https://equium.xyz)
+- Docs: [equium.xyz/docs](https://equium.xyz/docs)
+- X: [**@EquiumEQM**](https://x.com/EquiumEQM)
+- GitHub: [HannaPrints/equium](https://github.com/HannaPrints/equium)
+- Solana program: [`ZKGMUfxiRCXFPnqz9zgqAnuqJy15jk7fKbR4o6FuEQM`](https://explorer.solana.com/address/ZKGMUfxiRCXFPnqz9zgqAnuqJy15jk7fKbR4o6FuEQM?cluster=devnet) (devnet)
+- $EQM mint (mainnet): [`1MhvZzEe8gQ8Rb9CrT3Dn26Gkn9QRErzLMGkkTwveqm`](https://solscan.io/token/1MhvZzEe8gQ8Rb9CrT3Dn26Gkn9QRErzLMGkkTwveqm)
 
-The mint address is intentionally not listed here pre-mainnet. The miner reads it from the on-chain program config when you connect, so you don't need to know it yourself.
+The mainnet mint is created and reserved; the on-chain program is currently active on devnet for testing. Always verify the mint address before buying on a DEX.
 
 ## ✦ FAQ
 
